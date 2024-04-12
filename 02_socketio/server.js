@@ -70,7 +70,7 @@ io.on("connection", (socket) => {
     //    (특정 방의)전체 클라이언트에게 보낸다.
     socket.on("message",(message) => {
         console.log(message);
-        io.to(socket.room).emit("message_toAll", message)
+        io.to(socket.room).emit("message_toAll", message);
     });
 });
 
