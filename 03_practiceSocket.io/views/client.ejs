@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>실습1 Socket 연습</title>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+  <h2>Hello World!</h2>
+  <button type="submit" id="hello">hello</button>
+  <button type="submit" id="study">study</button>
+  <button type="submit" id="bye">bye</button>
+  <div id="msg"></div>
+  </form>
+  <script>
+    const socket = io();
+    const hello = document.querySelector("#hello");
+    const study = document.querySelector("#study");
+    const bye = document.querySelector("#bye");
+    const div = document.querySelector("div");
+
+    hello.addEventListener("click", (e) => {
+      e.preventDefault();
+      socket.emit("hello", "hello");
+    });
+
+    // 이벤트 명을 지정하고 메세지를 보냄
+    // socket.emit("전송할 이벤트 명", msg);
+    study.addEventListener("click", (e) => {
+      e.preventDefault();
+      socket.emit("study", "study");
+    });
+
+    bye.addEventListener("click", (e) => {
+      e.preventDefault();
+      socket.emit("bye", "bye");
+    });
+
+    socket.on("msg_render", (title, msg) => {
+      div.innerText = `${title}: ${msg}`;
+    });
+  </script>
+</body>
+
+</html>
