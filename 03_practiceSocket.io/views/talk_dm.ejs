@@ -184,9 +184,11 @@
     );
     const chatForm = document.querySelector("#msg-form");
     const nicknameInput = document.querySelector("#nickname");
+    const container = document.querySelector(".container");
+    const select = document.querySelector("#dm-select");
 
-    let mynick
-    // 닉네임 사용해서 채팅방 입장하기
+    let myNick;
+    // 닉네임 사용해서 채팅 방 입장하기
     // [닉네임 사용1]: 닉네임 서버에 보내서 중복된 닉네임인지 체크
     function join() {
       socket.emit("checkNick", nicknameInput.value);
@@ -194,17 +196,44 @@
 
     // [닉네임 사용3]
     // (1)닉네임 중복으로 입장실패,
-    socket.on("error", (errMsg) => {})
+    socket.on("error", (errMsg) => {
+      alert(errMsg);
+    });
 
-    // (2) 입장성공, 내 닉네임 정보 저장
-    // 보여지는 화면 
-    /* [실습3] 입장-2 */
+    // (2) 입장성공, 내닉네임 정보 저장
+    // 보여지는 화면 변경(채팅창 보이게, 닉네임 작성란 비활성화)
+    socket.on("entrySuccess", (mynick) => {
+      myNick = mynick;
+      nicknameInput.disabled = true;
+      document
+        .querySelector(".entry-box > button")
+        .classList.add("d-none");
+      container.classList.remove("d-none");
+    });
+
+    // (3) 입장 성공, 기존 코드 변경 없음
+    // [닉네임]이 입장하셨습니다.
     socket.on("notice", (noticeMsg) => {
       console.log(noticeMsg);
       const div = document.createElement("div");
       div.textContent = noticeMsg;
       div.classList.add("notice");
       chatContainer.append(div);
+    });
+
+    // (4) select box의 option을 닉네임 정보로 채우기
+    socket.on("updateNicks", (nickInfo) => {
+      // nickInfo ex> { 'r_SVMmDL-pXsyiJSAAAE': 'allie' }
+      let options = `<option value='all'>전체</option>`;
+
+      for (let key in nickInfo) {
+        console.log("for in key: ", key);
+        console.log("value", nickInfo[key]);
+        let option = `<option value=${key}>${nickInfo[key]}</option>`;
+        if (nickInfo[key] !== myNick) options += option;
+      }
+      // console.log(options);
+      select.innerHTML = options;
     });
 
     /* [실습4] 채팅 주고받기 */
@@ -214,8 +243,16 @@
       if (input.value.trim() === "") return;
 
       // [4-1] 폼이 제출되었을 때 메세지를 서버로 전달
-      socket.emit("send", input.value);
+      // [변경] 메세지 > dm 정보가 포함된 데이터
+      const sendData = {
+        myNick,
+        dm: select.value, //'r_SVMmDL-pXsyiJSAAAE' or 'all'
+        msg: input.value,
+      };
+      // socket.emit("send", input.value);
+      socket.emit("send", sendData);
       input.value = "";
+      select;
     });
 
     // [4-3] 모든 메세지를 전달받고
@@ -228,12 +265,24 @@
       const div = document.createElement("div");
       const span = document.createElement("span"); //내용에 대한
       span.classList.add("msg-box");
-      span.textContent = msgInfo.message; //메세지 넣기
-      if (socket.id === msgInfo.id) {
+      // span.textContent = msgInfo.message; //메세지 넣기
+
+      if (msgInfo.isDm) {
+        //dm
+        span.textContent = "[귓속말]" + msgInfo.message;
+      } else {
+        // 전체보내기
+        span.textContent = msgInfo.message; //메세지 넣기
+      }
+
+      if (myNick === msgInfo.id) {
         // 내가 보낸 메세지
         div.classList.add("speech", "me");
       } else {
         // 남이 보낸 메세지
+        if (msgInfo.isDm) {
+          div.classList.add("dm"); // dm일 때 ui 변경
+        }
         div.classList.add("speech", "other");
         const nickname = document.createElement("span"); // 닉네임에 대한
         nickname.classList.add("nickname");
