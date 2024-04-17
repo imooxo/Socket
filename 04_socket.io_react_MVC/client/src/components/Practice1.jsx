@@ -1,40 +1,39 @@
-import { useState, useEffect } from "react";
-import { io } from "socket.io-client";
+import { useEffect, useState } from "react";
+import io from "socket.io-client";
 
-const socket = io.connect("http://localhost:8080", { autoConnect: false });
+const socket = io.connect("http://localhost:8080", {
+  autoConnect: false,
+});
 
 export default function Practice1() {
   const [fromServerStr, setFromServerStr] = useState("");
   const initSocketConnect = () => {
-    console.log(socket.connected);
     if (!socket.connected) socket.connect();
   };
 
   useEffect(() => {
     initSocketConnect();
+
+    socket.on("hello2", (msg) => {
+      setFromServerStr(`server: ${msg}`);
+    });
+    socket.on("study2", (msg) => {
+      setFromServerStr(`server: ${msg}`);
+    });
+    socket.on("bye2", (msg) => {
+      setFromServerStr(`server: ${msg}`);
+    });
   }, []);
 
   const hello = () => {
     socket.emit("hello", "hello");
-    socket.on("hello2", (message) => {
-      setFromServerStr("server: " + message);
-    });
   };
-
   const study = () => {
     socket.emit("study", "study");
-    socket.on("study2", (message) => {
-      setFromServerStr("server: " + message);
-    });
   };
-
   const bye = () => {
     socket.emit("bye", "bye");
-    socket.on("bye2", (message) => {
-      setFromServerStr("server: " + message);
-    });
   };
-
   return (
     <>
       <button onClick={hello}>hello</button>
