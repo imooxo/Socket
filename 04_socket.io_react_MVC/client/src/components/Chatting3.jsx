@@ -55,7 +55,6 @@ export default function Chatting3() {
 
   const join = () => {
     initSocketConnect();
-
     // [닉네임사용1]: 중복체크를 위해 서버로 닉네임 전송
     socket.emit("checkNick", nicknameInput);
   };
