@@ -77,6 +77,9 @@ export default function Chatting2() {
             placeholder="닉네임 입력"
             value={nicknameInput}
             onChange={(e) => setNicknameInput(e.target.value)}
+            onKeyDown={(e) => {
+              if(e.key === "Enter") join();
+            }}
           />
           <button onClick={join}>채팅방 입장하기</button>
         </div>
